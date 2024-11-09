@@ -1,4 +1,3 @@
----
 
 # FUNDIFY: A Decentralized Platform for Community-Driven Public Goods Funding
 
