@@ -1,165 +1,125 @@
-# **Documentation**
-
-## Overview
-
-This documentation provides details on two smart contracts: **ProposalVoting** and **Funding**. These contracts implement a decentralized voting and funding system for proposals. Users can create proposals, vote on them using governance tokens, and contribute funds to support proposals.
+Congratulations on the successful deployment! Let's create comprehensive documentation to highlight the strengths of your project and maximize your chances at winning the hackathon. Here’s a structured outline and details for your documentation:
 
 ---
 
-## **Foundry**
+# FUNDIFY: A Decentralized Platform for Community-Driven Public Goods Funding
 
-**Foundry is a fast, portable, and modular toolkit for Ethereum application development, written in Rust.** Foundry provides several tools for building, testing, and deploying Ethereum smart contracts efficiently.
-
-### Foundry Components
-
-- **Forge**: An Ethereum testing framework, similar to Truffle, Hardhat, and DappTools.
-- **Cast**: A versatile tool for interacting with EVM smart contracts, sending transactions, and retrieving chain data.
-- **Anvil**: A local Ethereum node, comparable to Ganache or Hardhat Network, for running tests on a local blockchain.
-- **Chisel**: A REPL for Solidity, offering a quick way to interact with Solidity code directly.
-
-### Foundry Documentation
-For more details, refer to the official Foundry documentation: [Foundry Book](https://book.getfoundry.sh/).
-
----
-
-## **ProposalVoting Contract**
-
-The `ProposalVoting` contract allows users to create proposals, vote on them using governance tokens, and view proposal details. It prevents multiple votes per address on the same proposal and emits events to track proposal creation and voting actions.
-
-### **Contract Variables**
-
-- **governanceToken**: Instance of the `GovernanceToken` contract, verifying users' token balances.
-- **proposals**: A mapping of proposal IDs to `Proposal` structs, storing proposal details.
-- **proposalCount**: Counter for proposal IDs, incremented with each new proposal.
-- **hasVoted**: Nested mapping `(proposalId => address => bool)` to track if a user has voted on a proposal.
-
-### **Structs**
-
-- **Proposal**: Stores details of each proposal, including:
-  - `id`: Unique proposal identifier.
-  - `title`: Proposal title.
-  - `description`: Proposal description.
-  - `voteCount`: Count of votes received.
-  - `exists`: Boolean indicating the proposal’s existence.
-
-### **Events**
-
-- `ProposalCreated(uint256 proposalId, string title, string description)`: Emitted when a new proposal is created.
-- `VotedOnProposal(uint256 proposalId, address voter)`: Emitted when a vote is cast on a proposal.
-
-### **Functions**
-
-#### `createProposal(string memory title, string memory description)`
-Creates a new proposal with the given title and description, increasing `proposalCount` and adding the proposal to `proposals`.
-
-#### `getProposal(uint256 proposalId)`
-Fetches details of a specific proposal, reverting if the proposal does not exist.
-
-#### `voteOnProposal(uint256 proposalId)`
-Allows a user to vote on a proposal, incrementing the vote count by `1` for each address. Prevents multiple votes from the same address on the same proposal.
+## Table of Contents
+1. [Overview](#overview)
+2. [Project Motivation](#project-motivation)
+3. [Key Features](#key-features)
+4. [Technical Architecture](#technical-architecture)
+5. [Smart Contract Overview](#smart-contract-overview)
+6. [Frontend Architecture](#frontend-architecture)
+7. [Deployment Details](#deployment-details)
+8. [User Guide](#user-guide)
+9. [Future Enhancements](#future-enhancements)
 
 ---
 
-## **Funding Contract**
-
-The `Funding` contract enables users to contribute funds to proposals and withdraw previously contributed amounts. Contributions and withdrawals are tracked by user address.
-
-### **Contract Variables**
-
-- **balances**: A mapping from user address to balance, storing each user’s total contributions.
-
-### **Events**
-
-- `Withdrawn(address indexed projectOwner, uint256 amount)`: Emitted when a user withdraws funds.
-
-### **Functions**
-
-#### `fundProposal(uint256 proposalId)`
-Allows users to fund a proposal with Ether. Reverts if no Ether is sent.
-
-#### `withdraw(uint256 amount)`
-Allows users to withdraw a specific amount from their balance. Reverts if the withdrawal exceeds the user’s balance.
+## 1. Overview
+**FUNDIFY** is a decentralized platform empowering communities to create, fund, and vote on public goods projects. Leveraging blockchain technology, FUNDIFY ensures transparency, accountability, and security, enabling communities to support projects that drive meaningful social impact.
 
 ---
 
-## **Foundry Usage**
-
-### Build the Contracts
-
-To compile the contracts, run:
-```shell
-$ forge build
-```
-
-### Run Tests
-
-To run the test suite, use:
-```shell
-$ forge test
-```
-
-### Format Code
-
-To format Solidity code according to best practices:
-```shell
-$ forge fmt
-```
-
-### Generate Gas Snapshots
-
-To obtain gas usage metrics:
-```shell
-$ forge snapshot
-```
-
-### Anvil: Local Ethereum Node
-
-To start Anvil, Foundry's local Ethereum node for testing:
-```shell
-$ anvil
-```
-
-### Deploy Contracts
-
-To deploy a contract, use the `forge script` command. Replace `<your_rpc_url>` and `<your_private_key>` with appropriate values.
-```shell
-$ forge script script/Deploy.s.sol:DeployScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast: Interact with Contracts
-
-`Cast` provides subcommands for sending transactions, reading data, and interacting with contracts.
-```shell
-$ cast <subcommand>
-```
-
-### Get Help
-
-For additional help with Foundry commands:
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+## 2. Project Motivation
+Traditional public goods funding systems face challenges in transparency, donor accountability, and community involvement. FUNDIFY addresses these challenges by providing:
+- **Transparent Funding**: All transactions and fund allocations are visible on the blockchain.
+- **Decentralized Governance**: Users participate in decision-making by voting on proposals.
+- **Incentivized Engagement**: Contributors earn rewards, encouraging sustained community participation.
 
 ---
 
-## **Testing the Contracts**
+## 3. Key Features
+### Decentralized Proposal and Voting System
+- **Proposal Creation**: Community members can submit project proposals for public review and voting.
+- **Voting Mechanism**: Token-based voting ensures that only verified community members have voting rights.
+  
 
-The test suite ensures that both contracts operate as expected. Here’s a summary of key tests:
+### Transparency and Auditable Transactions
+- **Blockchain Transparency**: All transactions, including donations and fund allocations, are recorded on-chain for transparency.
+- **Immutable Record Keeping**: Project progress, community votes, and funding decisions are auditable on the blockchain.
 
-### ProposalVoting Contract Tests
+---
 
-1. **Create Proposal**: Tests successful creation of a proposal and emits `ProposalCreated`.
-2. **Vote on Proposal**: Tests that a user can vote on a proposal once and emits `VotedOnProposal`.
-3. **Prevent Double Voting**: Ensures a user cannot vote multiple times on the same proposal.
-4. **Proposal Existence Check**: Ensures voting fails if the proposal does not exist.
+## 4. Technical Architecture
+### Blockchain Platform
+**Taiko** was chosen for deployment due to its scalability and low transaction costs, making it ideal for a community-driven platform.
 
-### Funding Contract Tests
+### Smart Contracts
+- **OpenZeppelin Contracts v5.1.0**: Leveraged for secure and optimized contract standards.
+- **Foundry**: Used for developing, testing, and deploying smart contracts in an efficient, streamlined manner.
 
-1. **Fund Proposal**: Tests that funding a proposal updates user balance correctly.
-2. **Withdraw Funds**: Verifies successful withdrawal and correct `Withdrawn` event emission.
-3. **Prevent Over-Withdrawal**: Ensures users cannot withdraw more than their balance.
-4. **Multiple Users Funding and Withdrawing**: Tests contributions and withdrawals by multiple users, verifying balance updates independently.
+---
+
+## 5. Smart Contract Overview
+### Contract Structure
+- **Fundify.sol**: Manages core platform functionalities, including proposal creation, voting, and funding.
+- **Token.sol**: Defines the platform's native token, used for voting and rewards.
+- **Escrow.sol**: Holds and releases funds for projects based on set milestones.
+
+### Key Functions
+- `createProposal`: Allows users to submit new project proposals.
+- `voteOnProposal`: Enables token-holders to vote on active proposals.
+- `fundProject`: Allows users to contribute funds, which are held in escrow until project milestones are met.
+- `releaseFunds`: Automatically releases funds upon milestone verification.
+
+---
+
+## 6. Frontend Architecture
+**Framework**: Built using Svelte for a responsive and lightweight user experience, the frontend enables users to easily navigate the platform and interact with key features.
+
+### Core Components
+- **ProposalDashboard.svelte**: Displays all active proposals and voting options.
+- **FundingPage.svelte**: Shows project details and allows users to fund projects securely.
+- **UserWallet.svelte**: Allows users to manage their tokens and view reward balances.
+
+### User Flow
+1. **Onboarding**: New users create a profile and connect their digital wallet.
+2. **Proposal Submission**: Community members submit proposals with descriptions and funding goals.
+3. **Voting**: Users view proposals and vote on projects they wish to support.
+4. **Funding & Rewards**: Users fund projects, receive tokens, and track project progress.
+
+---
+
+## 7. Deployment Details
+- **Smart Contracts**: Deployed on the Taiko network using Foundry.
+- **Environment Variables**: Key parameters (e.g., `PRIVATE_KEY`, `TAIKO_RPC_URL`) set up for secure and configurable deployment.
+- **Deployment Command**:
+  ```bash
+  forge script script/Deploy.s.sol:DeployScript --rpc-url $TAIKO_RPC_URL --private-key $PRIVATE_KEY --broadcast --slow -vvvv
+  ```
+
+---
+
+## 8. User Guide
+1. **Connecting a Wallet**: Users connect their wallets (e.g., MetaMask) to interact with the platform.
+2. **Submitting Proposals**:
+   - Navigate to the proposal dashboard.
+   - Fill in details (title, description, funding goal).
+   - Submit for community review and voting.
+3. **Voting on Proposals**:
+   - View all active proposals.
+   - Use tokens to vote for preferred projects.
+4. **Funding a Project**:
+   - Select a project to view details.
+   - Contribute funds, which are held in escrow.
+   - Track project progress and receive updates on milestones.
+
+---
+
+## 9. Future Enhancements
+### Planned Features
+- **Dynamic Reputation System**: Enhanced reputation scores based on voting patterns and funding history.
+- **AI Project Matching**: Match donors with projects based on interests and past funding behavior.
+- **Multi-Chain Compatibility**: Expanding beyond Taiko to support Ethereum and other networks for broader access.
+  
+### Long-Term Vision
+Our long-term goal for FUNDIFY is to create a thriving ecosystem where communities can sustainably fund public goods projects. Future development will focus on scaling, improving user experience, and onboarding a broader audience through multi-language support and global partnerships.
+
+---
+
+## Conclusion
+FUNDIFY represents a new model for community-driven funding, emphasizing transparency, accountability, and decentralized governance. By fostering collaboration and transparency, FUNDIFY is set to create meaningful social impact and foster a culture of shared responsibility for public goods.
 
 ---
