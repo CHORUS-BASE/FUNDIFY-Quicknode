@@ -93,15 +93,11 @@ function testMultipleUsersFundingAndWithdrawal() public {
     vm.prank(user2);
     funding.withdraw(1 ether);
     assertEq(funding.balances(user2), 1 ether); // User2’s remaining balance should be 1 Ether
+
+    // Check contract balance if necessary
+    assertEq(address(funding).balance, 2.5 ether); // Contract’s remaining balance should be 2.5 Ether
 }
 
-    function testTotalBalanceConsistency() public {
-        vm.prank(projectOwner);
-        funding.fundProposal{value: 2 ether}(1);
-
-        uint256 contractBalance = address(funding).balance;
-        assertEq(contractBalance, 2 ether);
-    }
 
     receive() external payable {}
 }

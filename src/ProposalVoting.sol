@@ -6,6 +6,8 @@ import "./GovernanceToken.sol";
 contract ProposalVoting {
     GovernanceToken public governanceToken;
 
+    event VotedOnProposal(uint256 proposalId, address voter);
+
     struct Proposal {
         uint256 id;
         string title;
@@ -16,6 +18,7 @@ contract ProposalVoting {
 
     mapping(uint256 => Proposal) public proposals;
     uint256 public proposalCount;
+    mapping(uint256 => mapping(address => bool)) public hasVoted;
 
     constructor(GovernanceToken _governanceToken) {
         governanceToken = _governanceToken;
@@ -32,12 +35,17 @@ contract ProposalVoting {
         return (proposal.id, proposal.title, proposal.description, proposal.voteCount, proposal.exists);
     }
 
-    function voteOnProposal(uint256 proposalId) public {
-    require(proposals[proposalId].exists, "Proposal does not exist");
-    uint256 voterBalance = governanceToken.balanceOf(msg.sender);
-    require(voterBalance > 0, "No tokens to vote");
+   function voteOnProposal(uint256 proposalId) public {
+        require(proposals[proposalId].exists, "Proposal does not exist");
+        require(!hasVoted[proposalId][msg.sender], "Already voted on this proposal"); // Prevent double voting
 
-    proposals[proposalId].voteCount += voterBalance; // Increment votes by voter's balance
-}
+        uint256 voterBalance = governanceToken.balanceOf(msg.sender);
+        require(voterBalance > 0, "No tokens to vote");
+
+        proposals[proposalId].voteCount += 1; // Increment by 1 for each address
+        hasVoted[proposalId][msg.sender] = true; // Mark as voted for this proposal
+
+        emit VotedOnProposal(proposalId, msg.sender); // Emit event for voting
+    }
 }
 
