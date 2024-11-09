@@ -1,5 +1,3 @@
-Congratulations on the successful deployment! Let's create comprehensive documentation to highlight the strengths of your project and maximize your chances at winning the hackathon. Here’s a structured outline and details for your documentation:
-
 ---
 
 # FUNDIFY: A Decentralized Platform for Community-Driven Public Goods Funding
