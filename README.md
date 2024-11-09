@@ -1,5 +1,3 @@
-Great structure! Based on the files you’ve outlined, here’s a refined, structured documentation that aligns with your current codebase. This will help present FUNDIFY as a complete, organized project for the hackathon.
-
 ---
 
 # FUNDIFY: A Decentralized Platform for Community-Driven Public Goods Funding
