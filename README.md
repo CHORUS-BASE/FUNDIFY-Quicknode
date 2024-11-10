@@ -1,165 +1,108 @@
-# **Documentation**
 
-## Overview
+# FUNDIFY: A Decentralized Platform for Community-Driven Public Goods Funding
 
-This documentation provides details on two smart contracts: **ProposalVoting** and **Funding**. These contracts implement a decentralized voting and funding system for proposals. Users can create proposals, vote on them using governance tokens, and contribute funds to support proposals.
-
----
-
-## **Foundry**
-
-**Foundry is a fast, portable, and modular toolkit for Ethereum application development, written in Rust.** Foundry provides several tools for building, testing, and deploying Ethereum smart contracts efficiently.
-
-### Foundry Components
-
-- **Forge**: An Ethereum testing framework, similar to Truffle, Hardhat, and DappTools.
-- **Cast**: A versatile tool for interacting with EVM smart contracts, sending transactions, and retrieving chain data.
-- **Anvil**: A local Ethereum node, comparable to Ganache or Hardhat Network, for running tests on a local blockchain.
-- **Chisel**: A REPL for Solidity, offering a quick way to interact with Solidity code directly.
-
-### Foundry Documentation
-For more details, refer to the official Foundry documentation: [Foundry Book](https://book.getfoundry.sh/).
-
----
-
-## **ProposalVoting Contract**
-
-The `ProposalVoting` contract allows users to create proposals, vote on them using governance tokens, and view proposal details. It prevents multiple votes per address on the same proposal and emits events to track proposal creation and voting actions.
-
-### **Contract Variables**
-
-- **governanceToken**: Instance of the `GovernanceToken` contract, verifying users' token balances.
-- **proposals**: A mapping of proposal IDs to `Proposal` structs, storing proposal details.
-- **proposalCount**: Counter for proposal IDs, incremented with each new proposal.
-- **hasVoted**: Nested mapping `(proposalId => address => bool)` to track if a user has voted on a proposal.
-
-### **Structs**
-
-- **Proposal**: Stores details of each proposal, including:
-  - `id`: Unique proposal identifier.
-  - `title`: Proposal title.
-  - `description`: Proposal description.
-  - `voteCount`: Count of votes received.
-  - `exists`: Boolean indicating the proposal’s existence.
-
-### **Events**
-
-- `ProposalCreated(uint256 proposalId, string title, string description)`: Emitted when a new proposal is created.
-- `VotedOnProposal(uint256 proposalId, address voter)`: Emitted when a vote is cast on a proposal.
-
-### **Functions**
-
-#### `createProposal(string memory title, string memory description)`
-Creates a new proposal with the given title and description, increasing `proposalCount` and adding the proposal to `proposals`.
-
-#### `getProposal(uint256 proposalId)`
-Fetches details of a specific proposal, reverting if the proposal does not exist.
-
-#### `voteOnProposal(uint256 proposalId)`
-Allows a user to vote on a proposal, incrementing the vote count by `1` for each address. Prevents multiple votes from the same address on the same proposal.
-
----
-
-## **Funding Contract**
-
-The `Funding` contract enables users to contribute funds to proposals and withdraw previously contributed amounts. Contributions and withdrawals are tracked by user address.
-
-### **Contract Variables**
-
-- **balances**: A mapping from user address to balance, storing each user’s total contributions.
-
-### **Events**
-
-- `Withdrawn(address indexed projectOwner, uint256 amount)`: Emitted when a user withdraws funds.
-
-### **Functions**
-
-#### `fundProposal(uint256 proposalId)`
-Allows users to fund a proposal with Ether. Reverts if no Ether is sent.
-
-#### `withdraw(uint256 amount)`
-Allows users to withdraw a specific amount from their balance. Reverts if the withdrawal exceeds the user’s balance.
-
----
-
-## **Foundry Usage**
-
-### Build the Contracts
-
-To compile the contracts, run:
-```shell
-$ forge build
-```
-
-### Run Tests
-
-To run the test suite, use:
-```shell
-$ forge test
-```
-
-### Format Code
-
-To format Solidity code according to best practices:
-```shell
-$ forge fmt
-```
-
-### Generate Gas Snapshots
-
-To obtain gas usage metrics:
-```shell
-$ forge snapshot
-```
-
-### Anvil: Local Ethereum Node
-
-To start Anvil, Foundry's local Ethereum node for testing:
-```shell
-$ anvil
-```
-
-### Deploy Contracts
-
-To deploy a contract, use the `forge script` command. Replace `<your_rpc_url>` and `<your_private_key>` with appropriate values.
-```shell
-$ forge script script/Deploy.s.sol:DeployScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast: Interact with Contracts
-
-`Cast` provides subcommands for sending transactions, reading data, and interacting with contracts.
-```shell
-$ cast <subcommand>
-```
-
-### Get Help
-
-For additional help with Foundry commands:
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+## Project Structure
+```plaintext
+├── script
+│   └── Deploy.s.sol                 # Deployment script for deploying contracts
+├── src
+│   ├── Funding.sol                   # Manages funding contributions and fund disbursements
+│   ├── GovernanceToken.sol           # ERC-20 token for voting and rewards
+│   └── ProposalVoting.sol            # Handles proposal creation, voting, and decision logic
+└── test
+    └── ProposalVoting.t.sol          # Unit tests for the ProposalVoting contract
 ```
 
 ---
 
-## **Testing the Contracts**
-
-The test suite ensures that both contracts operate as expected. Here’s a summary of key tests:
-
-### ProposalVoting Contract Tests
-
-1. **Create Proposal**: Tests successful creation of a proposal and emits `ProposalCreated`.
-2. **Vote on Proposal**: Tests that a user can vote on a proposal once and emits `VotedOnProposal`.
-3. **Prevent Double Voting**: Ensures a user cannot vote multiple times on the same proposal.
-4. **Proposal Existence Check**: Ensures voting fails if the proposal does not exist.
-
-### Funding Contract Tests
-
-1. **Fund Proposal**: Tests that funding a proposal updates user balance correctly.
-2. **Withdraw Funds**: Verifies successful withdrawal and correct `Withdrawn` event emission.
-3. **Prevent Over-Withdrawal**: Ensures users cannot withdraw more than their balance.
-4. **Multiple Users Funding and Withdrawing**: Tests contributions and withdrawals by multiple users, verifying balance updates independently.
+## Table of Contents
+1. [Overview](#overview)
+2. [Project Motivation](#project-motivation)
+3. [Key Features](#key-features)
+4. [Smart Contract Overview](#smart-contract-overview)
+5. [Deployment](#deployment)
+6. [Testing](#testing)
+7. [Future Enhancements](#future-enhancements)
 
 ---
+
+## 1. Overview
+**FUNDIFY** is a decentralized platform enabling communities to fund, propose, and vote on public goods projects. It leverages blockchain technology to offer secure, transparent funding and governance.
+
+---
+
+## 2. Project Motivation
+Current funding mechanisms for public goods face challenges in transparency and community involvement. FUNDIFY addresses these with a decentralized, token-based platform where users can:
+- Propose public projects
+- Vote on project proposals
+- Contribute funds transparently
+
+---
+
+## 3. Key Features
+- **Proposal Creation and Voting**: Allows users to submit and vote on proposals for community projects.
+- **Token-Based Governance**: Uses an ERC-20 token for voting and incentives.
+- **Secure Funding**: Contributions are held securely until project milestones are achieved.
+
+---
+
+## 4. Smart Contract Overview
+
+### A. Funding.sol
+Manages funding contributions, tracks funds in escrow, and releases them based on project milestones. Key functions:
+- `contribute`: Allows users to contribute funds to a project.
+- `releaseFunds`: Releases funds to a project upon reaching a milestone.
+
+### B. GovernanceToken.sol
+Implements an ERC-20 token to serve as a voting and reward mechanism. Key functions:
+- `mint`: Mints new tokens for rewarding participants.
+- `burn`: Burns tokens when needed, providing flexibility for governance mechanisms.
+
+### C. ProposalVoting.sol
+Handles the proposal creation and voting process. Key functions:
+- `createProposal`: Allows users to submit new project proposals.
+- `vote`: Allows token holders to vote on active proposals.
+- `executeProposal`: Executes proposals once voting has concluded and thresholds are met.
+
+---
+
+## 5. Deployment
+### Setting Up Environment Variables
+To deploy contracts to the Taiko network, set up environment variables:
+```bash
+export PRIVATE_KEY="your_private_key_with_0x_prefix"
+export TAIKO_RPC_URL="https://rpc.hekla.taiko.xyz"
+```
+
+### Deployment Command
+Use Foundry's `forge` tool to deploy contracts:
+```bash
+forge script script/Deploy.s.sol:DeployScript --rpc-url $TAIKO_RPC_URL --private-key $PRIVATE_KEY --broadcast --slow -vvvv
+```
+
+This command deploys all the necessary smart contracts to the Taiko network and broadcasts the transaction.
+
+---
+
+## 6. Testing
+Testing is set up in the `test` directory, where unit tests validate the key functionality of the `ProposalVoting.sol` contract.
+
+### Running Tests
+Run tests using Foundry’s `forge` testing framework:
+```bash
+forge test --match-path test/ProposalVoting.t.sol
+```
+
+This command verifies that the core features, such as proposal creation, voting, and fund disbursement, work as expected.
+
+---
+
+## 7. Future Enhancements
+- **Enhanced Governance Model**: Adding quadratic or weighted voting for more representative governance.
+- **Multi-Chain Support**: Expanding beyond Taiko to support Ethereum, Binance Smart Chain, and others.
+- **Reputation System**: Rewarding active contributors with governance influence, creating a reputation-based incentive layer.
+  
+---
+
+## Conclusion
+FUNDIFY is a decentralized solution for transparent, community-driven public goods funding. Its design prioritizes community engagement, accountability, and scalability, making it an impactful tool for funding community-led projects.
