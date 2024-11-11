@@ -57,14 +57,20 @@ contract FundingTest is Test {
     }
 
     function testWithdrawMoreThanBalance() public {
-        uint256 proposalId = 1;
-        
-        vm.prank(projectOwner);
-        funding.fundProposal{value: 1 ether}(proposalId);
+    uint256 proposalId = 1;
+    address user1 = address(0x1);
 
-        vm.expectRevert("Insufficient balance for proposal");
-        funding.withdraw(proposalId, 2 ether);
-    }
+    // Fund the proposal as user1
+    vm.deal(user1, 1 ether);
+    vm.prank(user1);
+    funding.fundProposal{value: 1 ether}(proposalId);
+
+    // Attempt to withdraw more than user1's contribution
+    vm.prank(user1);
+    vm.expectRevert("Insufficient user contribution");
+    funding.withdraw(proposalId, 2 ether);
+}
+
 
     function testMultipleFundingContributions() public {
         uint256 proposalId = 1;
@@ -102,34 +108,38 @@ contract FundingTest is Test {
     }
 
     function testMultipleUsersFundingAndWithdrawal() public {
-        uint256 proposalId = 1;
-        address user1 = address(0x1);
-        address user2 = address(0x2);
+    uint256 proposalId = 1;
+    address user1 = address(0x1);
+    address user2 = address(0x2);
 
-        // Fund the contract as user1 and user2
-        vm.prank(user1);
-        funding.fundProposal{value: 1 ether}(proposalId); // User1 funds 1 Ether
+    // Ensure both users have enough Ether
+    vm.deal(user1, 2 ether);
+    vm.deal(user2, 2 ether);
 
-        vm.prank(user2);
-        funding.fundProposal{value: 2 ether}(proposalId); // User2 funds 2 Ether
+    // Fund the contract as user1 and user2
+    vm.prank(user1);
+    funding.fundProposal{value: 1 ether}(proposalId);
+    assertEq(funding.userContributions(proposalId, user1), 1 ether);
+    assertEq(funding.proposalBalances(proposalId), 1 ether);
 
-        // Verify balances for user1 and user2 in Funding contract
-        assertEq(funding.userContributions(proposalId, user1), 1 ether);
-        assertEq(funding.userContributions(proposalId, user2), 2 ether);
+    vm.prank(user2);
+    funding.fundProposal{value: 2 ether}(proposalId);
+    assertEq(funding.userContributions(proposalId, user2), 2 ether);
+    assertEq(funding.proposalBalances(proposalId), 3 ether); // Total proposal balance should be 3 Ether
 
-        // User1 withdraws 0.5 Ether
-        vm.prank(user1);
-        funding.withdraw(proposalId, 0.5 ether);
-        assertEq(funding.userContributions(proposalId, user1), 0.5 ether); // User1’s remaining balance should be 0.5 Ether
+    // User1 withdraws 0.5 Ether
+    vm.prank(user1);
+    funding.withdraw(proposalId, 0.5 ether);
+    assertEq(funding.userContributions(proposalId, user1), 0.5 ether);
+    assertEq(funding.proposalBalances(proposalId), 2.5 ether);
 
-        // User2 withdraws 1 Ether
-        vm.prank(user2);
-        funding.withdraw(proposalId, 1 ether);
-        assertEq(funding.userContributions(proposalId, user2), 1 ether); // User2’s remaining balance should be 1 Ether
+    // User2 withdraws 1 Ether
+    vm.prank(user2);
+    funding.withdraw(proposalId, 1 ether);
+    assertEq(funding.userContributions(proposalId, user2), 1 ether);
+    assertEq(funding.proposalBalances(proposalId), 1.5 ether); // Remaining balance should be 1.5 Ether
+}
 
-        // Check contract balance if necessary
-        assertEq(funding.proposalBalances(proposalId), 1.5 ether); // Proposal’s remaining balance should be 1.5 Ether
-    }
 
     receive() external payable {}
 }

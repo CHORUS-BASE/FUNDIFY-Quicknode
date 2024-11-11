@@ -10,7 +10,7 @@ contract Funding {
 
     // Events to log funding and withdrawal actions
     event ProposalFunded(uint256 indexed proposalId, address indexed contributor, uint256 amount);
-    event Withdrawn(uint256 indexed proposalId, address indexed projectOwner, uint256 amount);
+    event Withdrawn(uint256 indexed proposalId, address indexed contributor, uint256 amount);
 
     // Function to fund a specific proposal
     function fundProposal(uint256 proposalId) external payable {
@@ -24,11 +24,15 @@ contract Funding {
         emit ProposalFunded(proposalId, msg.sender, msg.value);
     }
 
-    // Function for the project owner to withdraw funds from a specific proposal
+    // Function for users to withdraw their contributions from a specific proposal
     function withdraw(uint256 proposalId, uint256 amount) external {
+        // Check user contribution balance
+        require(userContributions[proposalId][msg.sender] >= amount, "Insufficient user contribution");
+        // Check proposal balance
         require(proposalBalances[proposalId] >= amount, "Insufficient balance for proposal");
 
-        // Update the proposal balance before transferring to prevent re-entrancy attacks
+        // Deduct the amount from the user's contributions and the proposal's balance
+        userContributions[proposalId][msg.sender] -= amount;
         proposalBalances[proposalId] -= amount;
 
         // Transfer the specified amount to the caller
