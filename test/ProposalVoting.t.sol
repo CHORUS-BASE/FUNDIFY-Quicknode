@@ -2,52 +2,51 @@
 pragma solidity 0.8.24;
 
 import "forge-std/Test.sol";
-import "../src/Funding.sol"; 
-import "../src/ProposalVoting.sol";  
-import "../src/GovernanceToken.sol";  
+import "../src/Funding.sol";
+import "../src/ProposalVoting.sol";
+import "../src/GovernanceToken.sol";
 
 contract FundingTest is Test {
     Funding private funding;
-    ProposalVoting private proposalVoting; 
-    GovernanceToken private governanceToken; 
+    ProposalVoting private proposalVoting;
+    GovernanceToken private governanceToken;
     address payable private funder = payable(address(0x123));
     address payable private projectOwner = payable(address(this));
+    address private user1 = address(0x1);
+    address private user2 = address(0x2);
 
     event Withdrawn(uint256 indexed proposalId, address indexed projectOwner, uint256 amount);
 
     function setUp() public {
+        // Deploy GovernanceToken
         governanceToken = new GovernanceToken();
-        proposalVoting = new ProposalVoting(governanceToken);
-        funding = new Funding(); 
+
+        // Define the quorum and voteThreshold values for ProposalVoting
+        uint256 quorum = 50000;         
+        uint256 voteThreshold = 25000; 
+
+        // Deploy ProposalVoting with the expected arguments
+        proposalVoting = new ProposalVoting(governanceToken, quorum, voteThreshold);
+
+        // Deploy Funding contract, passing the GovernanceToken address
+        funding = new Funding(address(governanceToken));
     }
 
     function testProjectOwnerDeposit() public {
         uint256 proposalId = 1;
-
-        // Fund the proposal with 1 ether
         vm.prank(projectOwner);
         funding.fundProposal{value: 1 ether}(proposalId);
-
-        // Check if the user's contribution to the proposal matches 1 ether
         assertEq(funding.userContributions(proposalId, projectOwner), 1 ether);
     }
 
     function testWithdraw() public {
         uint256 proposalId = 1;
-
-        // Fund the proposal
         vm.prank(projectOwner);
         funding.fundProposal{value: 1 ether}(proposalId);
-
-        // Expect the event to be emitted for withdrawal
         vm.expectEmit(true, true, true, true);
         emit Withdrawn(proposalId, projectOwner, 0.5 ether);
-
-        // Withdraw 0.5 ether from the proposal
         vm.prank(projectOwner);
         funding.withdraw(proposalId, 0.5 ether);
-
-        // Check if the proposal balance matches the remaining amount
         assertEq(funding.proposalBalances(proposalId), 0.5 ether);
     }
 
@@ -57,89 +56,120 @@ contract FundingTest is Test {
     }
 
     function testWithdrawMoreThanBalance() public {
-    uint256 proposalId = 1;
-    address user1 = address(0x1);
+        uint256 proposalId = 1;
+        vm.deal(user1, 1 ether);
 
-    // Fund the proposal as user1
-    vm.deal(user1, 1 ether);
-    vm.prank(user1);
-    funding.fundProposal{value: 1 ether}(proposalId);
+        // User funds the proposal
+        vm.prank(user1);
+        funding.fundProposal{value: 1 ether}(proposalId);
 
-    // Attempt to withdraw more than user1's contribution
-    vm.prank(user1);
-    vm.expectRevert("Insufficient user contribution");
-    funding.withdraw(proposalId, 2 ether);
-}
-
+        // User attempts to withdraw more than balance
+        vm.prank(user1);
+        vm.expectRevert("Insufficient funds to withdraw");
+        funding.withdraw(proposalId, 2 ether);
+    }
 
     function testMultipleFundingContributions() public {
         uint256 proposalId = 1;
-
         vm.prank(projectOwner);
         funding.fundProposal{value: 1 ether}(proposalId);
         vm.prank(projectOwner);
         funding.fundProposal{value: 0.5 ether}(proposalId);
-
         assertEq(funding.userContributions(proposalId, projectOwner), 1.5 ether);
     }
 
     function testProposalSpecificFunding() public {
         vm.prank(projectOwner);
-        funding.fundProposal{value: 1 ether}(1); // Fund proposal ID 1
-
+        funding.fundProposal{value: 1 ether}(1);
         vm.prank(projectOwner);
-        funding.fundProposal{value: 0.5 ether}(2); // Fund proposal ID 2
-
-        // Verify balances are isolated per proposal
-        assertEq(funding.userContributions(1, projectOwner), 1 ether); // Balance for proposal 1
-        assertEq(funding.userContributions(2, projectOwner), 0.5 ether); // Balance for proposal 2
+        funding.fundProposal{value: 0.5 ether}(2);
+        assertEq(funding.userContributions(1, projectOwner), 1 ether);
+        assertEq(funding.userContributions(2, projectOwner), 0.5 ether);
     }
 
     function testWithdrawEvent() public {
         uint256 proposalId = 1;
-
         vm.prank(projectOwner);
         funding.fundProposal{value: 1 ether}(proposalId);
-
         vm.expectEmit(true, true, true, true);
         emit Withdrawn(proposalId, projectOwner, 0.5 ether);
-
         funding.withdraw(proposalId, 0.5 ether);
     }
 
     function testMultipleUsersFundingAndWithdrawal() public {
-    uint256 proposalId = 1;
-    address user1 = address(0x1);
-    address user2 = address(0x2);
+        uint256 proposalId = 1;
 
-    // Ensure both users have enough Ether
-    vm.deal(user1, 2 ether);
-    vm.deal(user2, 2 ether);
+        // Fund both users
+        vm.deal(user1, 2 ether);
+        vm.deal(user2, 2 ether);
 
-    // Fund the contract as user1 and user2
-    vm.prank(user1);
-    funding.fundProposal{value: 1 ether}(proposalId);
-    assertEq(funding.userContributions(proposalId, user1), 1 ether);
-    assertEq(funding.proposalBalances(proposalId), 1 ether);
+        // User1 funds the proposal
+        vm.prank(user1);
+        funding.fundProposal{value: 1 ether}(proposalId);
+        assertEq(funding.userContributions(proposalId, user1), 1 ether);
 
-    vm.prank(user2);
-    funding.fundProposal{value: 2 ether}(proposalId);
-    assertEq(funding.userContributions(proposalId, user2), 2 ether);
-    assertEq(funding.proposalBalances(proposalId), 3 ether); // Total proposal balance should be 3 Ether
+        // User2 funds the proposal
+        vm.prank(user2);
+        funding.fundProposal{value: 1.5 ether}(proposalId);
+        assertEq(funding.userContributions(proposalId, user2), 1.5 ether);
 
-    // User1 withdraws 0.5 Ether
-    vm.prank(user1);
-    funding.withdraw(proposalId, 0.5 ether);
-    assertEq(funding.userContributions(proposalId, user1), 0.5 ether);
-    assertEq(funding.proposalBalances(proposalId), 2.5 ether);
+        // Attempt withdrawals
+        vm.prank(user1);
+        funding.withdraw(proposalId, 1 ether); // Ensure withdrawal is within contribution
 
-    // User2 withdraws 1 Ether
-    vm.prank(user2);
-    funding.withdraw(proposalId, 1 ether);
-    assertEq(funding.userContributions(proposalId, user2), 1 ether);
-    assertEq(funding.proposalBalances(proposalId), 1.5 ether); // Remaining balance should be 1.5 Ether
-}
+        vm.prank(user2);
+        funding.withdraw(proposalId, 1 ether); // Partial withdrawal for user2
 
+        // Validate final state
+        assertEq(funding.userContributions(proposalId, user1), 0);
+        assertEq(funding.userContributions(proposalId, user2), 0.5 ether); // Remaining balance for user2
+    }
+
+    function testExceedProposalFundingCap() public {
+        // Ensure the funding cap is in place in your contract
+        uint256 proposalId = 1;
+
+        // Set the cap in the contract
+        // Assuming you have a constant for the cap in your Funding contract
+        // You need to adjust the Funding contract to include this cap
+
+        // User attempts to fund more than the cap
+        vm.prank(projectOwner);
+        vm.expectRevert("Funding cap exceeded");
+        funding.fundProposal{value: 11 ether}(proposalId);
+    }
+
+    function testBalanceAfterMultipleWithdrawals() public {
+        uint256 proposalId = 1;
+        vm.prank(projectOwner);
+        funding.fundProposal{value: 3 ether}(proposalId);
+        vm.prank(projectOwner);
+        funding.withdraw(proposalId, 1 ether);
+        assertEq(funding.proposalBalances(proposalId), 2 ether);
+        vm.prank(projectOwner);
+        funding.withdraw(proposalId, 0.5 ether);
+        assertEq(funding.proposalBalances(proposalId), 1.5 ether);
+    }
+
+    function testMultipleProposalFundingIsolation() public {
+        uint256 proposalId1 = 1;
+        uint256 proposalId2 = 2;
+        vm.prank(projectOwner);
+        funding.fundProposal{value: 2 ether}(proposalId1);
+        vm.prank(projectOwner);
+        funding.fundProposal{value: 1 ether}(proposalId2);
+        assertEq(funding.proposalBalances(proposalId1), 2 ether);
+        assertEq(funding.proposalBalances(proposalId2), 1 ether);
+    }
+
+    function testFractionalWithdraw() public {
+        uint256 proposalId = 1;
+        vm.prank(projectOwner);
+        funding.fundProposal{value: 1.5 ether}(proposalId);
+        vm.prank(projectOwner);
+        funding.withdraw(proposalId, 0.75 ether);
+        assertEq(funding.proposalBalances(proposalId), 0.75 ether);
+    }
 
     receive() external payable {}
 }

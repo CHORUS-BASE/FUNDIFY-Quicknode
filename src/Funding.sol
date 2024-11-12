@@ -1,44 +1,95 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+// SPDX-License-Identifier: Unlicensed
+pragma solidity 0.8.24;
 
-contract Funding {
-    // Mapping of proposalId to balances for each proposal
-    mapping(uint256 => uint256) public proposalBalances;
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "./GovernanceToken.sol";
 
-    // Mapping of user contributions to each proposal
+contract Funding is Ownable, ReentrancyGuard {
+    // Mapping to track user contributions for each proposal
     mapping(uint256 => mapping(address => uint256)) public userContributions;
+    // Mapping to track total balance of each proposal
+    mapping(uint256 => uint256) public proposalBalances;
+    // Total GT rewards per proposal
+    mapping(uint256 => uint256) public proposalGTRewards;
+    
+    // Funding cap per proposal (optional)
+    uint256 public constant FUNDING_CAP = 10 ether;
 
-    // Events to log funding and withdrawal actions
-    event ProposalFunded(uint256 indexed proposalId, address indexed contributor, uint256 amount);
+    // IERC20 instance of Governance Token (GT)
+    GovernanceToken public governanceToken;
+
+    // Proposal counter for generating unique proposal IDs
+    uint256 public proposalCounter;
+
+    // Event for withdrawal
     event Withdrawn(uint256 indexed proposalId, address indexed contributor, uint256 amount);
 
-    // Function to fund a specific proposal
-    function fundProposal(uint256 proposalId) external payable {
-        require(msg.value > 0, "Must send ETH to fund");
+    // Event for GT reward issuance
+    event GTRewardIssued(uint256 indexed proposalId, address indexed contributor, uint256 amount);
 
-        // Update the proposal's balance and the user's contribution for that proposal
-        proposalBalances[proposalId] += msg.value;
-        userContributions[proposalId][msg.sender] += msg.value;
+    // Event for proposal creation
+    event ProposalCreated(uint256 indexed proposalId);
 
-        // Emit an event to log the funding action
-        emit ProposalFunded(proposalId, msg.sender, msg.value);
+    // Constructor to set the address of the GT contract
+    constructor(address _governanceToken) Ownable(msg.sender) {
+        governanceToken = GovernanceToken(_governanceToken);
     }
 
-    // Function for users to withdraw their contributions from a specific proposal
-    function withdraw(uint256 proposalId, uint256 amount) external {
-        // Check user contribution balance
-        require(userContributions[proposalId][msg.sender] >= amount, "Insufficient user contribution");
-        // Check proposal balance
-        require(proposalBalances[proposalId] >= amount, "Insufficient balance for proposal");
+    // Function to create a new proposal
+    function createProposal() external onlyOwner {
+        proposalCounter++;  // Increment the proposal ID for each new proposal
+        uint256 newProposalId = proposalCounter;
 
-        // Deduct the amount from the user's contributions and the proposal's balance
+        // Emit the ProposalCreated event
+        emit ProposalCreated(newProposalId);
+
+        // Further logic for storing proposal metadata can be added here
+    }
+
+    // Function for funding proposals
+    function fundProposal(uint256 proposalId) external payable nonReentrant {
+        require(msg.value > 0, "Must send ETH to fund");
+        
+        // Ensure the total balance doesn't exceed the funding cap
+        require(proposalBalances[proposalId] + msg.value <= FUNDING_CAP, "Funding cap exceeded");
+        
+        userContributions[proposalId][msg.sender] += msg.value;
+        proposalBalances[proposalId] += msg.value;
+
+        // Issue GTs based on the contribution
+        uint256 rewardAmount = calculateGTReward(proposalId, msg.value);
+        proposalGTRewards[proposalId] += rewardAmount;
+        
+        // Mint the GT tokens for the user
+        governanceToken.mint(msg.sender, rewardAmount);
+
+        emit GTRewardIssued(proposalId, msg.sender, rewardAmount);
+    }
+
+    // Function to calculate GT reward based on contribution
+    function calculateGTReward(uint256 proposalId, uint256 contributionAmount) public view returns (uint256) {
+        uint256 totalFunding = proposalBalances[proposalId];
+        uint256 totalRewardPool = proposalGTRewards[proposalId]; // GTs allocated for this proposal
+
+        if (totalFunding == 0) {
+            return 0;
+        }
+
+        // Simple reward calculation: proportional to the user's contribution
+        return (contributionAmount * totalRewardPool) / totalFunding;
+    }
+
+    // Function for withdrawing funds by the contributor
+    function withdraw(uint256 proposalId, uint256 amount) external nonReentrant {
+        require(userContributions[proposalId][msg.sender] >= amount, "Insufficient funds to withdraw");
+
         userContributions[proposalId][msg.sender] -= amount;
         proposalBalances[proposalId] -= amount;
-
-        // Transfer the specified amount to the caller
         payable(msg.sender).transfer(amount);
 
-        // Emit an event to log the withdrawal
+        // Emit the Withdrawn event
         emit Withdrawn(proposalId, msg.sender, amount);
     }
 }

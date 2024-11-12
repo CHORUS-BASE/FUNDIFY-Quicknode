@@ -11,6 +11,10 @@ contract DeployScript is Script {
         // Load environment variables
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
+        // Set up proposal voting parameters
+        uint256 quorum = 100;         
+        uint256 voteThreshold = 5000; 
+
         // Start Broadcasting
         vm.startBroadcast(deployerPrivateKey);
 
@@ -18,12 +22,12 @@ contract DeployScript is Script {
         GovernanceToken governanceToken = new GovernanceToken();
         console.log("GovernanceToken deployed at:", address(governanceToken));
 
-        // Step 2: Deploy the ProposalVoting Contract, passing the Governance Token address
-        ProposalVoting proposalVoting = new ProposalVoting(governanceToken);
+        // Step 2: Deploy the ProposalVoting Contract, passing Governance Token, quorum, and voteThreshold
+        ProposalVoting proposalVoting = new ProposalVoting(governanceToken, quorum, voteThreshold);
         console.log("ProposalVoting deployed at:", address(proposalVoting));
 
-        // Step 3: Deploy the Funding Contract, passing the ProposalVoting contract address
-        Funding funding = new Funding();
+        // Step 3: Deploy the Funding Contract, passing the Governance Token address
+        Funding funding = new Funding(address(governanceToken));
         console.log("Funding deployed at:", address(funding));
 
         // End Broadcasting
