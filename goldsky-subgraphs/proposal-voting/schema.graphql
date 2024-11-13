@@ -1,0 +1,38 @@
+type DelegateSet @entity(immutable: true) {
+  id: Bytes!
+  delegator: Bytes! # address
+  delegatee: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ProposalCreated @entity(immutable: true) {
+  id: Bytes!
+  proposalId: BigInt! # uint256
+  title: String! # string
+  description: String! # string
+  deadline: BigInt! # uint256
+  fundingTarget: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ProposalFinalized @entity(immutable: true) {
+  id: Bytes!
+  proposalId: BigInt! # uint256
+  isSuccessful: Boolean! # bool
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type VotedOnProposal @entity(immutable: true) {
+  id: Bytes!
+  proposalId: BigInt! # uint256
+  voter: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

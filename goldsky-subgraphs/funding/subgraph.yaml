@@ -1,0 +1,35 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Funding
+    network: taiko-hekla-testnet
+    source:
+      address: "0xbB0D3Bdb091Cb87f6b19DeAE2029ED71D5940AD7"
+      abi: Funding
+      startBlock: 966975
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - GTRewardIssued
+        - OwnershipTransferred
+        - ProposalCreated
+        - Withdrawn
+      abis:
+        - name: Funding
+          file: ./abis/Funding.json
+      eventHandlers:
+        - event: GTRewardIssued(indexed uint256,indexed address,uint256)
+          handler: handleGTRewardIssued
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+        - event: ProposalCreated(indexed uint256)
+          handler: handleProposalCreated
+        - event: Withdrawn(indexed uint256,indexed address,uint256)
+          handler: handleWithdrawn
+      file: ./src/funding.ts

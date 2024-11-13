@@ -1,0 +1,8 @@
+{
+  "mainnet": {
+    "GovernanceToken": {
+      "address": "0x42d781DF75100e27488A0d0B086CD805Cce14225",
+      "startBlock": 966973
+    }
+  }
+}
