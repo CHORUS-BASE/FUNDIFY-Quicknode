@@ -2,9 +2,11 @@
 pragma solidity ^0.8.24;
 
 import "./GovernanceToken.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract ProposalVoting {
     GovernanceToken public governanceToken;
+    IERC20 public taikoToken; // Taiko token address for dual-token voting
 
     // Events for tracking proposal activities
     event ProposalCreated(uint256 indexed proposalId, string title, string description, uint256 deadline, uint256 fundingTarget);
@@ -12,7 +14,6 @@ contract ProposalVoting {
     event ProposalFinalized(uint256 indexed proposalId, bool isSuccessful);
     event DelegateSet(address indexed delegator, address indexed delegatee);
 
-    // Proposal Categories
     enum Category { Development, Marketing, Research }
 
     struct Proposal {
@@ -31,22 +32,23 @@ contract ProposalVoting {
     mapping(uint256 => Proposal) public proposals;
     uint256 public proposalCount;
     mapping(uint256 => mapping(address => bool)) public hasVoted;
-
-    // Delegation system for voting power
     mapping(address => address) public delegates;
 
-    // Proposal requirements
     uint256 public quorum;
     uint256 public voteThreshold;
-    uint256 public gracePeriod = 1 weeks; // Example grace period duration
-    uint256 public rewardPercentage = 10; // Percentage reward for successful proposal voters
+    uint256 public gracePeriod = 1 weeks;
+    uint256 public rewardPercentage = 10;
 
-    constructor(GovernanceToken _governanceToken, uint256 _quorum, uint256 _voteThreshold) {
+    address public targetContract;
+
+    constructor(GovernanceToken _governanceToken, IERC20 _taikoToken, uint256 _quorum, uint256 _voteThreshold) {
         governanceToken = _governanceToken;
+        taikoToken = _taikoToken;
         quorum = _quorum;
         voteThreshold = _voteThreshold;
     }
 
+    // Create a proposal with a funding target
     function createProposal(
         string memory title,
         string memory description,
@@ -73,6 +75,7 @@ contract ProposalVoting {
         emit ProposalCreated(proposalCount, title, description, deadline, fundingTarget);
     }
 
+    // Get the details of a proposal
     function getProposal(uint256 proposalId)
         public
         view
@@ -93,12 +96,14 @@ contract ProposalVoting {
         );
     }
 
+    // Delegate votes to another address
     function delegateVote(address delegatee) public {
         require(delegatee != msg.sender, "Cannot delegate to yourself");
         delegates[msg.sender] = delegatee;
         emit DelegateSet(msg.sender, delegatee);
     }
 
+    // Vote on a proposal
     function voteOnProposal(uint256 proposalId) public {
         Proposal storage proposal = proposals[proposalId];
         require(proposal.exists, "Proposal does not exist");
@@ -111,16 +116,19 @@ contract ProposalVoting {
 
         require(!hasVoted[proposalId][voter], "Already voted on this proposal");
 
-        uint256 voterBalance = governanceToken.balanceOf(voter);
-        require(voterBalance > 0, "No tokens to vote");
+        uint256 governanceBalance = governanceToken.balanceOf(voter);
+        uint256 taikoBalance = taikoToken.balanceOf(voter);
+        uint256 totalVotingPower = governanceBalance + taikoBalance;
 
-        // Add weighted votes based on the balance of the voter
-        proposal.voteCount += voterBalance;
+        require(totalVotingPower > 0, "No tokens to vote");
+
+        proposal.voteCount += totalVotingPower;
         hasVoted[proposalId][voter] = true;
 
         emit VotedOnProposal(proposalId, voter);
     }
 
+    // Finalize a proposal after the deadline
     function finalizeProposal(uint256 proposalId) public {
         Proposal storage proposal = proposals[proposalId];
         require(proposal.exists, "Proposal does not exist");
@@ -128,31 +136,38 @@ contract ProposalVoting {
 
         proposal.isActive = false;
 
-        // Check if proposal meets quorum and vote threshold
-        if (proposal.voteCount >= quorum && proposal.voteCount >= (voteThreshold * governanceToken.totalSupply()) / 100) {
+        if (proposal.voteCount >= quorum && proposal.voteCount >= (voteThreshold * (governanceToken.totalSupply() + taikoToken.totalSupply())) / 100) {
             proposal.isSuccessful = true;
         }
 
         emit ProposalFinalized(proposalId, proposal.isSuccessful);
     }
 
+    // Distribute rewards to participants who voted on a successful proposal
     function distributeRewards(uint256 proposalId) public {
         Proposal storage proposal = proposals[proposalId];
         require(!proposal.isActive, "Proposal is still active");
         require(proposal.isSuccessful, "Proposal was not successful");
 
-        // Example reward logic: distribute reward to each voter
         uint256 rewardAmount = (proposal.voteCount * rewardPercentage) / 100;
-        governanceToken.mint(msg.sender, rewardAmount); // Minting rewards for each participant who voted
+
+        // Distribute rewards to all voters
+        for (uint256 i = 0; i < proposalCount; i++) {
+            address voter = address(0); // You'll need a list of voters to distribute rewards to
+            governanceToken.mint(voter, rewardAmount);
+        }
     }
 
-    address public targetContract;
+    // Set the target contract for proposal execution
+    function setTargetContract(address _targetContract) external {
+        targetContract = _targetContract;
+    }
 
+    // Execute a successful proposal
     function executeProposal(uint256 proposalId) public {
         Proposal storage proposal = proposals[proposalId];
         require(proposal.isSuccessful, "Proposal not successful");
 
-        // Placeholder for execution logic
         (bool success, ) = targetContract.call{value: proposal.fundingTarget}("");
         require(success, "Execution failed");
     }

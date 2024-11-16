@@ -10,6 +10,7 @@ contract FundingTest is Test {
     Funding private funding;
     ProposalVoting private proposalVoting;
     GovernanceToken private governanceToken;
+    IERC20 private taikoToken;
     address payable private funder = payable(address(0x123));
     address payable private projectOwner = payable(address(this));
     address private user1 = address(0x1);
@@ -21,12 +22,15 @@ contract FundingTest is Test {
         // Deploy GovernanceToken
         governanceToken = new GovernanceToken();
 
+        // Mock Taiko token for dual-token functionality
+        taikoToken = IERC20(address(new GovernanceToken())); // Replace with actual TaikoToken if available
+
         // Define the quorum and voteThreshold values for ProposalVoting
         uint256 quorum = 50000;         
         uint256 voteThreshold = 25000; 
 
-        // Deploy ProposalVoting with the expected arguments
-        proposalVoting = new ProposalVoting(governanceToken, quorum, voteThreshold);
+        // Deploy ProposalVoting with the expected arguments, including Taiko token address
+        proposalVoting = new ProposalVoting(governanceToken, taikoToken, quorum, voteThreshold);
 
         // Deploy Funding contract, passing the GovernanceToken address
         funding = new Funding(address(governanceToken));
@@ -126,12 +130,7 @@ contract FundingTest is Test {
     }
 
     function testExceedProposalFundingCap() public {
-        // Ensure the funding cap is in place in your contract
         uint256 proposalId = 1;
-
-        // Set the cap in the contract
-        // Assuming you have a constant for the cap in your Funding contract
-        // You need to adjust the Funding contract to include this cap
 
         // User attempts to fund more than the cap
         vm.prank(projectOwner);
