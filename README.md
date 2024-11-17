@@ -1,5 +1,10 @@
+Here’s the updated README with sections covering the usage of **Taiko HeLks** and the **Goldsky Subgraph**:
+
+---
 
 # FUNDIFY: A Decentralized Platform for Community-Driven Public Goods Funding
+
+[![Project Demo](https://img.shields.io/badge/Watch%20Demo-Click%20Here-blue?style=for-the-badge&logo=youtube)](https://www.awesomescreenshot.com/video/33689966?key=bf0e3895a44babb7e3691292153c67fc)
 
 ## Project Structure
 ```plaintext
@@ -22,7 +27,8 @@
 4. [Smart Contract Overview](#smart-contract-overview)
 5. [Deployment](#deployment)
 6. [Testing](#testing)
-7. [Future Enhancements](#future-enhancements)
+7. [Integrations](#integrations)
+8. [Future Enhancements](#future-enhancements)
 
 ---
 
@@ -97,7 +103,43 @@ This command verifies that the core features, such as proposal creation, voting,
 
 ---
 
-## 7. Future Enhancements
+## 7. Integrations
+
+### A. Taiko HeLks
+Taiko HeLks is used as the underlying layer for blockchain transaction handling in FUNDIFY, leveraging its scalability and low-cost transaction environment. Through HeLks, FUNDIFY ensures efficient and decentralized execution of proposals, funding contributions, and fund disbursements without compromising on security or transparency.
+
+**Usage**:
+- **Transaction Processing**: HeLks processes all on-chain transactions, ensuring they are both secure and cost-effective.
+- **Environment Setup**: Ensure that the Taiko RPC URL is properly configured in the environment variables, as shown in the [Deployment](#deployment) section.
+
+### B. Goldsky Subgraph
+The Goldsky Subgraph integration enables efficient and real-time querying of data within the FUNDIFY platform. This enhances the user experience by allowing instant access to proposal and voting data, without needing to query the blockchain directly.
+
+**Subgraph Features**:
+- **Proposal Tracking**: Provides real-time data on all active, pending, and completed proposals.
+- **Voting Statistics**: Aggregates voting information, allowing users to track voting participation and outcomes on each proposal.
+
+**Usage**:
+- Ensure that your front end connects to the Goldsky Subgraph endpoint to retrieve proposal, voting, and funding data.
+- Example query for retrieving proposal data:
+  ```graphql
+  {
+    proposals {
+      id
+      creator
+      title
+      description
+      votes {
+        voter
+        choice
+      }
+    }
+  }
+  ```
+
+---
+
+## 8. Future Enhancements
 - **Enhanced Governance Model**: Adding quadratic or weighted voting for more representative governance.
 - **Multi-Chain Support**: Expanding beyond Taiko to support Ethereum, Binance Smart Chain, and others.
 - **Reputation System**: Rewarding active contributors with governance influence, creating a reputation-based incentive layer.
@@ -105,4 +147,5 @@ This command verifies that the core features, such as proposal creation, voting,
 ---
 
 ## Conclusion
-FUNDIFY is a decentralized solution for transparent, community-driven public goods funding. Its design prioritizes community engagement, accountability, and scalability, making it an impactful tool for funding community-led projects.
+FUNDIFY is a decentralized solution for transparent, community-driven public goods funding. Its design prioritizes community engagement, accountability, and scalability, making it an impactful tool for funding community-led projects. 
+
