@@ -1,0 +1,35 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: ProposalVoting
+    network: taiko-hekla-testnet
+    source:
+      address: "0x1469C5d879E9434700e5A493eB5d246a4767e4F3"
+      abi: ProposalVoting
+      startBlock: 966974
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - DelegateSet
+        - ProposalCreated
+        - ProposalFinalized
+        - VotedOnProposal
+      abis:
+        - name: ProposalVoting
+          file: ./abis/ProposalVoting.json
+      eventHandlers:
+        - event: DelegateSet(indexed address,indexed address)
+          handler: handleDelegateSet
+        - event: ProposalCreated(indexed uint256,string,string,uint256,uint256)
+          handler: handleProposalCreated
+        - event: ProposalFinalized(indexed uint256,bool)
+          handler: handleProposalFinalized
+        - event: VotedOnProposal(indexed uint256,indexed address)
+          handler: handleVotedOnProposal
+      file: ./src/proposal-voting.ts
