@@ -1,7 +1,7 @@
 
 # FUNDIFY: A Decentralized Platform for Community-Driven Public Goods Funding
 
-[![Project Demo](https://img.shields.io/badge/Watch%20Demo-Click%20Here-blue?style=for-the-badge&logo=youtube)](https://www.awesomescreenshot.com/video/33689966?key=bf0e3895a44babb7e3691292153c67fc)
+[![Project Demo](https://img.shields.io/badge/Watch%20Demo-Click%20Here-blue?style=for-the-badge&logo=youtube)](https://youtu.be/cTJ184dlIM8)
 
 ## Project Structure
 ```plaintext
