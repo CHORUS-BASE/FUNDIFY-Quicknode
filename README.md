@@ -1,6 +1,3 @@
-Here’s the updated README with sections covering the usage of **Taiko HeLks** and the **Goldsky Subgraph**:
-
----
 
 # FUNDIFY: A Decentralized Platform for Community-Driven Public Goods Funding
 
@@ -105,8 +102,8 @@ This command verifies that the core features, such as proposal creation, voting,
 
 ## 7. Integrations
 
-### A. Taiko HeLks
-Taiko HeLks is used as the underlying layer for blockchain transaction handling in FUNDIFY, leveraging its scalability and low-cost transaction environment. Through HeLks, FUNDIFY ensures efficient and decentralized execution of proposals, funding contributions, and fund disbursements without compromising on security or transparency.
+### A. Taiko Helka
+Taiko Helka is used as the underlying layer for blockchain transaction handling in FUNDIFY, leveraging its scalability and low-cost transaction environment. Through HeLks, FUNDIFY ensures efficient and decentralized execution of proposals, funding contributions, and fund disbursements without compromising on security or transparency.
 
 **Usage**:
 - **Transaction Processing**: HeLks processes all on-chain transactions, ensuring they are both secure and cost-effective.
