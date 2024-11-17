@@ -106,7 +106,7 @@ This command verifies that the core features, such as proposal creation, voting,
 Taiko Helka is used as the underlying layer for blockchain transaction handling in FUNDIFY, leveraging its scalability and low-cost transaction environment. Through HeLks, FUNDIFY ensures efficient and decentralized execution of proposals, funding contributions, and fund disbursements without compromising on security or transparency.
 
 **Usage**:
-- **Transaction Processing**: HeLks processes all on-chain transactions, ensuring they are both secure and cost-effective.
+- **Transaction Processing**: Helka processes all on-chain transactions, ensuring they are both secure and cost-effective.
 - **Environment Setup**: Ensure that the Taiko RPC URL is properly configured in the environment variables, as shown in the [Deployment](#deployment) section.
 
 ### B. Goldsky Subgraph
