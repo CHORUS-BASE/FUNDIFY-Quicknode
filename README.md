@@ -144,5 +144,5 @@ The Goldsky Subgraph integration enables efficient and real-time querying of dat
 ---
 
 ## Conclusion
-FUNDIFY is a decentralized solution for transparent, community-driven public goods funding. Its design prioritizes community engagement, accountability, and scalability, making it an impactful tool for funding community-led projects. 
+FUNDIFY is a decentralized solution for transparent, community-driven public goods funding. Its design prioritizes community engagement, accountability, and scalability, making it an impactful tool for funding community-led projects....
 
