@@ -1,148 +1,130 @@
+# Fundify Documentation
 
-# FUNDIFY: A Decentralized Platform for Community-Driven Public Goods Funding
-
-[![Project Demo](https://img.shields.io/badge/Watch%20Demo-Click%20Here-blue?style=for-the-badge&logo=youtube)](https://youtu.be/cTJ184dlIM8)
-
-## Project Structure
-```plaintext
-├── script
-│   └── Deploy.s.sol                 # Deployment script for deploying contracts
-├── src
-│   ├── Funding.sol                   # Manages funding contributions and fund disbursements
-│   ├── GovernanceToken.sol           # ERC-20 token for voting and rewards
-│   └── ProposalVoting.sol            # Handles proposal creation, voting, and decision logic
-└── test
-    └── ProposalVoting.t.sol          # Unit tests for the ProposalVoting contract
-```
+## Overview
+Fundify is a decentralized platform designed to empower communities to propose, vote on, and fund public goods projects transparently and securely. It leverages blockchain technology to create an immutable and trustless system for governance and funding.
 
 ---
 
-## Table of Contents
-1. [Overview](#overview)
-2. [Project Motivation](#project-motivation)
-3. [Key Features](#key-features)
-4. [Smart Contract Overview](#smart-contract-overview)
-5. [Deployment](#deployment)
-6. [Testing](#testing)
-7. [Integrations](#integrations)
-8. [Future Enhancements](#future-enhancements)
+## Features
+
+### Proposal Submission
+- Users can create proposals for community-reviewed projects.
+- Proposals include details such as project description, funding goals, and deadlines.
+
+### Governance Voting
+- Governance tokens enable participants to vote on proposals.
+- Voting is secured and recorded on-chain to ensure transparency.
+
+### Funding System
+- Approved proposals receive funds through smart contracts.
+- Transactions and fund allocations are fully traceable on-chain.
+
+### Blockchain Integration
+- Powered by QuickNode for seamless blockchain interactions.
+- Efficient handling of on-chain data with low latency.
 
 ---
 
-## 1. Overview
-**FUNDIFY** is a decentralized platform enabling communities to fund, propose, and vote on public goods projects. It leverages blockchain technology to offer secure, transparent funding and governance.
+## Tech Stack
+
+### Smart Contracts
+- **Language**: Solidity 0.8.24
+- **Frameworks**: Foundry for testing and deployment
+- **Libraries**: OpenZeppelin Contracts 5.1.0
+
+### Backend
+- **Blockchain Node**: QuickNode
+- **Integration**: Webhooks for real-time data updates
+
+### Frontend
+- React vite
+
+### Tools
+- Ethers.js for interacting with smart contracts.
+- Hardhat or Foundry for development and deployment.
 
 ---
 
-## 2. Project Motivation
-Current funding mechanisms for public goods face challenges in transparency and community involvement. FUNDIFY addresses these with a decentralized, token-based platform where users can:
-- Propose public projects
-- Vote on project proposals
-- Contribute funds transparently
+## Installation and Setup
 
----
+### Prerequisites
+- Node.js (v18+)
+- npm or yarn
+- Foundry installed locally
+- QuickNode API key
 
-## 3. Key Features
-- **Proposal Creation and Voting**: Allows users to submit and vote on proposals for community projects.
-- **Token-Based Governance**: Uses an ERC-20 token for voting and incentives.
-- **Secure Funding**: Contributions are held securely until project milestones are achieved.
-
----
-
-## 4. Smart Contract Overview
-
-### A. Funding.sol
-Manages funding contributions, tracks funds in escrow, and releases them based on project milestones. Key functions:
-- `contribute`: Allows users to contribute funds to a project.
-- `releaseFunds`: Releases funds to a project upon reaching a milestone.
-
-### B. GovernanceToken.sol
-Implements an ERC-20 token to serve as a voting and reward mechanism. Key functions:
-- `mint`: Mints new tokens for rewarding participants.
-- `burn`: Burns tokens when needed, providing flexibility for governance mechanisms.
-
-### C. ProposalVoting.sol
-Handles the proposal creation and voting process. Key functions:
-- `createProposal`: Allows users to submit new project proposals.
-- `vote`: Allows token holders to vote on active proposals.
-- `executeProposal`: Executes proposals once voting has concluded and thresholds are met.
-
----
-
-## 5. Deployment
-### Setting Up Environment Variables
-To deploy contracts to the Taiko network, set up environment variables:
+### Clone the Repository
 ```bash
-export PRIVATE_KEY="your_private_key_with_0x_prefix"
-export TAIKO_RPC_URL="https://rpc.hekla.taiko.xyz"
+git clone https://github.com/your-username/fundify.git
+cd fundify
 ```
 
-### Deployment Command
-Use Foundry's `forge` tool to deploy contracts:
-```bash
-forge script script/Deploy.s.sol:DeployScript --rpc-url $TAIKO_RPC_URL --private-key $PRIVATE_KEY --broadcast --slow -vvvv
-```
 
-This command deploys all the necessary smart contracts to the Taiko network and broadcasts the transaction.
 
----
+## Smart Contracts
 
-## 6. Testing
-Testing is set up in the `test` directory, where unit tests validate the key functionality of the `ProposalVoting.sol` contract.
+### Key Contracts
 
-### Running Tests
-Run tests using Foundry’s `forge` testing framework:
-```bash
-forge test --match-path test/ProposalVoting.t.sol
-```
+#### 1. **GovernanceContract**
+- Manages governance tokens and voting processes.
+- Emits events for proposal creation and voting.
 
-This command verifies that the core features, such as proposal creation, voting, and fund disbursement, work as expected.
+#### 2. **FundingContract**
+- Handles the allocation of funds to approved proposals.
+- Tracks contributions and disbursements transparently.
 
 ---
 
-## 7. Integrations
+## API Integration
 
-### A. Taiko Helka
-Taiko Helka is used as the underlying layer for blockchain transaction handling in FUNDIFY, leveraging its scalability and low-cost transaction environment. Through HeLks, FUNDIFY ensures efficient and decentralized execution of proposals, funding contributions, and fund disbursements without compromising on security or transparency.
+### Using QuickNode
+Fundify integrates with QuickNode to manage on-chain interactions efficiently. Ensure you configure the QuickNode URL in the `.env` file.
 
-**Usage**:
-- **Transaction Processing**: Helka processes all on-chain transactions, ensuring they are both secure and cost-effective.
-- **Environment Setup**: Ensure that the Taiko RPC URL is properly configured in the environment variables, as shown in the [Deployment](#deployment) section.
-
-### B. Goldsky Subgraph
-The Goldsky Subgraph integration enables efficient and real-time querying of data within the FUNDIFY platform. This enhances the user experience by allowing instant access to proposal and voting data, without needing to query the blockchain directly.
-
-**Subgraph Features**:
-- **Proposal Tracking**: Provides real-time data on all active, pending, and completed proposals.
-- **Voting Statistics**: Aggregates voting information, allowing users to track voting participation and outcomes on each proposal.
-
-**Usage**:
-- Ensure that your front end connects to the Goldsky Subgraph endpoint to retrieve proposal, voting, and funding data.
-- Example query for retrieving proposal data:
-  ```graphql
-  {
-    proposals {
-      id
-      creator
-      title
-      description
-      votes {
-        voter
-        choice
-      }
-    }
-  }
-  ```
+### Webhooks
+Fundify supports webhook integrations for receiving real-time updates on:
+- Proposal submissions
+- Voting outcomes
+- Funding disbursements
 
 ---
 
-## 8. Future Enhancements
-- **Enhanced Governance Model**: Adding quadratic or weighted voting for more representative governance.
-- **Multi-Chain Support**: Expanding beyond Taiko to support Ethereum, Binance Smart Chain, and others.
-- **Reputation System**: Rewarding active contributors with governance influence, creating a reputation-based incentive layer.
-  
+## Contributing
+
+### How to Contribute
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Commit your changes and push the branch.
+4. Create a pull request for review.
+
+### Code Style
+- Follow Solidity best practices.
+- Ensure all new code includes tests.
+- Run `npm run lint` before committing.
+
 ---
 
-## Conclusion
-FUNDIFY is a decentralized solution for transparent, community-driven public goods funding. Its design prioritizes community engagement, accountability, and scalability, making it an impactful tool for funding community-led projects....
+## License
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+---
+
+## Contact
+For questions or support, please contact:
+- **Lead Developer**: Anjolaoluwa Adeyemi
+- **Email**: anjolaadeyemi4545@gmail.com
+- **GitHub**: [your-github-profile]
+
+---
+
+## Roadmap
+
+### Upcoming Features
+- Tokenization for additional revenue streams.
+- Integration with Layer 2 solutions for enhanced scalability.
+- Advanced analytics for community engagement metrics.
+
+### Future Plans
+- Expand community governance features.
+- Introduce a rewards system for active participants.
+- Collaborate with non-profits and DAOs to drive adoption.
 
