@@ -4,6 +4,8 @@
 Fundify is a decentralized platform designed to empower communities to propose, vote on, and fund public goods projects transparently and securely. It leverages blockchain technology to create an immutable and trustless system for governance and funding.
 
 ---
+# Video Demo
+https://www.awesomescreenshot.com/video/35049502?key=18592650ebd01a1366e6e02fcf80d7c8
 
 ## Features
 
@@ -127,4 +129,5 @@ For questions or support, please contact:
 - Expand community governance features.
 - Introduce a rewards system for active participants.
 - Collaborate with non-profits and DAOs to drive adoption.
+
 
